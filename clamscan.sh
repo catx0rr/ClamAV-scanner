@@ -11,7 +11,7 @@ email=
 pass=
 recipient=
 cc=
-smtp_svr=
+smtp_svr=smtp.gmail.com:587
 timestamp=$(date +'%m-%d-%y %H:%M:%S')
 logfile=/var/log/clamav.log
 
@@ -42,7 +42,6 @@ function clamav-notify
         -s $smtp_svr -xu $email -xp "$(echo $pass)" \
 	-q 2> /var/tmp/clamavfailed.log
 
-	rm -rf $logfile
 }
 
 function main 
