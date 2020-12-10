@@ -11,12 +11,13 @@ email=
 pass=
 recipient=
 cc=
-smtp_svr=
+smtp_svr=smtp.gmail.com:587
 timestamp=$(date +'%m-%d-%y %H:%M:%S')
-logfile=/var/log/clamavupdate.log
+logfile=/var/log/clamav/clamavupdate.log
 
 function freshclam-updater
 {
+	cat $logfile /var/log/clamav/clamavupdate.log.old
 	rm -rf $logfile 2>/dev/null
 
 	echo -e "[$timestamp] Initialized AV definitions update on $(hostname)" >> $logfile
@@ -28,8 +29,8 @@ function freshclam-updater
 function freshclam-notify 
 {
 	sendemail -f $email -t $recipient -cc $cc -u "[ClamAV updated its virus definitions on $(hostname)]" -m "$(cat $logfile)" \
-        -s $smtp_svr -xu $email -xp "$(echo $pass)" \
-	-q 2> /var/tmp/clamavfailed.log
+	-s $smtp_svr -xu $email -xp "$(echo $pass | base64 -d | tr A-Za-z N-ZA-Mn-za-m)" \
+	-q 2> /var/log/clamav/clamavsendfailed.log
 
 }
 
