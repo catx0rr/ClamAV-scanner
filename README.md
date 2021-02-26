@@ -1,47 +1,57 @@
-# Clamav Full disk scheduler
+## Installation instructions
 
+### Installation
+- copy avscan scripts directory to /root directory
+- change permissions to 700 of each shell script
 
-### Pre-requisites
+### Create a quarantine directory:
 
-- clamav
-- freshclam
-- sendemail (python package)
+- create a directory named quarantine under /opt/clamav directory
+- change permissions to 750 of quarantine directory
 
-### Installing packages
-
-You might need community repository to install packages
-
-Fedora / Centos / RedHat:
-
+### Create a cronjob for the AVScan
 ```
-sudo dnf install epel-release -y
-sudo dnf install clamav freshclam sendemail -y
-
+0 11   * * 5 root /root/avscan/freshclam.sh
+0 12   * * 5 root /root/avscan/clamscan.sh
 ```
-Ubuntu / Debian:
+- change permission of /etc/crontab to 640
 
+### Create a log rotation for clamav scanner EOF
 ```
-sudo apt-get install clamav freshclam sendemail -y
-```
-
-#### This is fully tested on Ubuntu / CentOS systems.
-
-### Set Up:
-
-- Copy the clamav directory under root directory
-```
-sudo cp clamav /root/
-sudo chmod -R 700 /root/clamav
-```
-- Create a cron job to automatically perform a scheduled scan
-    - run updater every 11pm and full system scan on 12mn
-```
-sudo chmod 660 /etc/crontab
-
-* 23 * * * root /root/clamav/clamscan.sh
-* 00 * * * root /root/clamav/freshclam.sh
+/var/log/clamav/clamav-scanner.log.old {
+    size 1k
+    copytruncate
+    rotate 4
+}
 ```
 
-- Setup email alerting and modify the script
-    - clamscan.sh
-    - freshclam.sh
+### Install sendemail (python email package)
+
+- sudo apt-get install -y sendemail
+
+### Encrypt the password of email account (alert account)
+```
+# openssl enc -e -aes-256-cbc -k <string> -pbkdf2 -a -iter <int> -iv <hex-values>
+
+paste the password on passwd field variable on /root/avscan/clamscan.sh and /root/avscan/freshclam.sh
+```
+
+### Configure openssl aesdecrypt
+```
+- provide key
+- provide iter
+- provide iv
+- add pbkdf2 to cipher
+```
+
+### Import function on /usr/bin directory
+```
+# cp ./function/aesdecrypt /usr/bin
+# chown root:root /usr/bin/aesdecrypt
+# chmod +x /usr/bin/aesdecrypt
+```
+
+### Test the AV Scanner and Updater
+
+- systemctl disable --now clamav-freshclam.service
+- run freshclam.sh and clamscan.sh

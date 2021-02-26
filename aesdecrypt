@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# change values accordingly to encryption cipher
+
+function aesdecrypt
+{
+    openssl enc -d -aes-256-cbc -k "<string>" -a -pbkdf2 -iter <int>  -iv <hex-value>
+}
